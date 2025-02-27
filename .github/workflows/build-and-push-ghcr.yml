@@ -1,4 +1,4 @@
-name: Build and Push to GHCR
+name: Build, Test, and Push to GHCR
 
 on:
   push:
@@ -25,14 +25,16 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Build Docker image
+      - name: Convert Repo Name to Lowercase and Build Docker Image
         run: |
           LOWER_REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME="ghcr.io/$LOWER_REPO/spring-boot-demo:latest"
           echo "Building image: $IMAGE_NAME"
           docker build -t "$IMAGE_NAME" .
 
-      - name: Push Docker image
+      - name: Convert Repo Name to Lowercase and Push Docker Image
         run: |
-          IMAGE_NAME=ghcr.io/${{ toLower(github.repository) }}/spring-boot-demo:latest
-          docker push $IMAGE_NAME
+          LOWER_REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/$LOWER_REPO/spring-boot-demo:latest"
+          echo "Pushing image: $IMAGE_NAME"
+          docker push "$IMAGE_NAME"
