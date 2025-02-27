@@ -1,0 +1,40 @@
+name: Build, Test, and Push to GHCR
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Build and Test
+        run: mvn clean install
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Convert Repo Name to Lowercase and Build Docker Image
+        run: |
+          LOWER_REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/$LOWER_REPO/spring-boot-demo:latest"
+          echo "Building image: $IMAGE_NAME"
+          docker build -t "$IMAGE_NAME" .
+
+      - name: Convert Repo Name to Lowercase and Push Docker Image
+        run: |
+          LOWER_REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/$LOWER_REPO/spring-boot-demo:latest"
+          echo "Pushing image: $IMAGE_NAME"
+          docker push "$IMAGE_NAME"
