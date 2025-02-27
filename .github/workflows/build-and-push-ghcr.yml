@@ -27,9 +27,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ toLower(github.repository) }}/spring-boot-demo:latest
+          LOWER_REPO=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME="ghcr.io/$LOWER_REPO/spring-boot-demo:latest"
           echo "Building image: $IMAGE_NAME"
-          docker build -t $IMAGE_NAME .
+          docker build -t "$IMAGE_NAME" .
 
       - name: Push Docker image
         run: |
